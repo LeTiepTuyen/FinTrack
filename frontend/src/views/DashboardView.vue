@@ -28,20 +28,39 @@
     <div class="dashboard-main-grid">
       <article class="panel-card analysis-panel">
         <header class="panel-header">
-          <h3>Cash Flow Analysis</h3>
+          <div>
+            <h3>Cash Flow Analysis</h3>
+            <p class="panel-subtitle">Track inflow vs outflow</p>
+          </div>
           <div class="panel-tabs">
-            <button type="button" class="active">Week</button>
-            <button type="button" disabled>Month</button>
+            <button
+              type="button"
+              :class="{ active: activeRange === 'week' }"
+              @click="activeRange = 'week'"
+            >
+              Week
+            </button>
+            <button
+              type="button"
+              :class="{ active: activeRange === 'month' }"
+              @click="activeRange = 'month'"
+            >
+              Month
+            </button>
           </div>
         </header>
 
-        <div class="bar-chart" v-if="weeklyData.length">
-          <div v-for="item in weeklyData" :key="item.day" class="bar-col">
+        <div
+          class="bar-chart"
+          v-if="chartData.length"
+          :style="{ gridTemplateColumns: `repeat(${chartData.length}, minmax(0, 1fr))` }"
+        >
+          <div v-for="item in chartData" :key="item.label" class="bar-col">
             <div class="bar-stack">
               <span class="income-bar" :style="{ height: `${item.incomeHeight}%` }"></span>
               <span class="expense-bar" :style="{ height: `${item.expenseHeight}%` }"></span>
             </div>
-            <small>{{ item.day }}</small>
+            <small>{{ item.label }}</small>
           </div>
         </div>
       </article>
@@ -51,6 +70,7 @@
           <h3>Recent Transactions</h3>
         </header>
         <p v-if="store.loading" class="empty-state">Loading data...</p>
+        <p v-else-if="store.error" class="empty-state">{{ store.error }}</p>
         <ul v-else-if="latestTransactions.length" class="recent-list">
           <li v-for="item in latestTransactions" :key="item.id">
             <div>
@@ -64,30 +84,51 @@
         </ul>
         <p v-else class="empty-state">No transactions yet.</p>
       </article>
+
+      <article class="panel-card category-panel">
+        <header class="panel-header">
+          <h3>Expenses by Category</h3>
+        </header>
+        <div class="pie-chart-container" v-if="categoryData.length">
+          <div class="donut-chart" :style="pieChartStyle">
+            <div class="donut-hole"></div>
+          </div>
+          <ul class="pie-legend">
+            <li v-for="item in categoryData" :key="item.label">
+              <div class="legend-left">
+                <span class="legend-color" :style="{ backgroundColor: item.color }"></span>
+                <span class="legend-label">{{ item.label }}</span>
+              </div>
+              <span class="legend-value">{{ item.percentage }}%</span>
+            </li>
+          </ul>
+        </div>
+        <p v-else class="empty-state">No expense data available.</p>
+      </article>
     </div>
   </section>
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useFinanceStore } from '../stores/financeStore';
 
 const store = useFinanceStore();
+const activeRange = ref('week');
 
 const latestTransactions = computed(() => store.transactions.slice(0, 5));
 
-const weeklyData = computed(() => {
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const base = days.map((day) => ({ day, income: 0, expense: 0 }));
-
-  store.transactions.slice(0, 20).forEach((item) => {
+const buildChart = (labels, items, resolver) => {
+  const base = labels.map((label) => ({ label, income: 0, expense: 0 }));
+  items.forEach((item) => {
     const date = new Date(item.transaction_date);
     if (Number.isNaN(date.getTime())) {
       return;
     }
-
-    const jsDay = date.getDay();
-    const index = jsDay === 0 ? 6 : jsDay - 1;
+    const index = resolver(date);
+    if (index === -1 || index >= base.length) {
+      return;
+    }
     if (item.type === 'income') {
       base[index].income += Number(item.amount || 0);
     } else {
@@ -105,6 +146,72 @@ const weeklyData = computed(() => {
     incomeHeight: Math.round((item.income / maxValue) * 100),
     expenseHeight: Math.round((item.expense / maxValue) * 100),
   }));
+};
+
+const weekData = computed(() => {
+  const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  return buildChart(labels, store.transactions.slice(0, 28), (date) => {
+    const jsDay = date.getDay();
+    return jsDay === 0 ? 6 : jsDay - 1;
+  });
+});
+
+const monthData = computed(() => {
+  const labels = ['W1', 'W2', 'W3', 'W4', 'W5'];
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+
+  const items = store.transactions.filter((item) => {
+    const date = new Date(item.transaction_date);
+    if (Number.isNaN(date.getTime())) {
+      return false;
+    }
+    return date.getFullYear() === year && date.getMonth() === month;
+  });
+
+  return buildChart(labels, items, (date) => Math.floor((date.getDate() - 1) / 7));
+});
+
+const chartData = computed(() => (activeRange.value === 'month' ? monthData.value : weekData.value));
+
+const categoryData = computed(() => {
+  const expenses = store.transactions.filter(t => t.type === 'expense');
+  const grouped = expenses.reduce((acc, t) => {
+    const cat = t.category || 'Other';
+    acc[cat] = (acc[cat] || 0) + Number(t.amount || 0);
+    return acc;
+  }, {});
+
+  const total = expenses.reduce((sum, t) => sum + Number(t.amount || 0), 0) || 1;
+  const colors = ['#ff988f', '#f6bb50', '#51e79d', '#4cc2ff', '#b388ff', '#ff88c2', '#ffd54f'];
+
+  let currentAngle = 0;
+  return Object.entries(grouped)
+    .sort((a, b) => b[1] - a[1])
+    .map(([label, value], index) => {
+      const percentage = (value / total) * 100;
+      const startAngle = currentAngle;
+      const endAngle = currentAngle + (percentage * 3.6);
+      currentAngle = endAngle;
+
+      return {
+        label,
+        value,
+        percentage: percentage.toFixed(1),
+        color: colors[index % colors.length],
+        startAngle,
+        endAngle,
+      };
+    });
+});
+
+const pieChartStyle = computed(() => {
+  if (!categoryData.value.length) return { background: '#243033' };
+  const gradientStops = categoryData.value.map(
+    (item) => `${item.color} ${item.startAngle}deg ${item.endAngle}deg`
+  ).join(', ');
+  return { background: `conic-gradient(${gradientStops})` };
 });
 
 const spentRatio = computed(() => {

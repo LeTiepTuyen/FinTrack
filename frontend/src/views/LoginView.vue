@@ -26,21 +26,54 @@
     </div>
 
     <div class="login-right">
-      <h2>Welcome back!</h2>
-      <p>Enter your details to access your wallet.</p>
+      <div class="login-tabs">
+        <button type="button" :class="{ active: isLogin }" @click="isLogin = true">Sign in</button>
+        <button type="button" :class="{ active: !isLogin }" @click="isLogin = false">Create account</button>
+      </div>
+      <h2>{{ isLogin ? 'Welcome back!' : 'Create an account' }}</h2>
+      <p>{{ isLogin ? 'Enter your details to access your wallet.' : 'Sign up to start managing your finances.' }}</p>
 
-      <form class="login-form" @submit.prevent="handleLogin">
+      <form class="login-form" @submit.prevent="handleSubmit">
+        <label v-if="!isLogin">
+          <span>Name</span>
+          <input v-model.trim="form.name" type="text" placeholder="John Doe" required />
+        </label>
         <label>
           <span>Email</span>
-          <input v-model.trim="form.email" type="email" placeholder="name@example.com" />
+          <input v-model.trim="form.email" type="email" placeholder="name@example.com" required />
         </label>
-        <label>
+        <label class="password-field">
           <span>Password</span>
-          <input v-model="form.password" type="password" placeholder="••••••••" />
+          <input
+            v-model="form.password"
+            :type="showPassword ? 'text' : 'password'"
+            placeholder="••••••••"
+            required
+          />
+          <button type="button" class="ghost-btn small" @click="showPassword = !showPassword">
+            {{ showPassword ? 'Hide' : 'Show' }}
+          </button>
         </label>
-        <p v-if="errorMessage" class="login-error">{{ errorMessage }}</p>
-        <button type="submit">Log in</button>
+        
+        <div class="login-meta" v-if="isLogin">
+          <label class="checkbox-row">
+            <input v-model="rememberMe" type="checkbox" />
+            Remember me
+          </label>
+          <a class="login-link" href="#" @click.prevent>Forgot password?</a>
+        </div>
+        
+        <p v-if="authStore.error" class="login-error">{{ authStore.error }}</p>
+        <p v-if="localError" class="login-error">{{ localError }}</p>
+        
+        <button type="submit" :disabled="authStore.loading">
+          {{ authStore.loading ? 'Processing...' : (isLogin ? 'Log in' : 'Sign up') }}
+        </button>
       </form>
+      
+      <p class="login-note">
+        By continuing, you agree to FinTrack terms and privacy policy.
+      </p>
     </div>
   </section>
 </template>
@@ -48,22 +81,39 @@
 <script setup>
 import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '../stores/authStore';
 
 const router = useRouter();
-const errorMessage = ref('');
+const authStore = useAuthStore();
+
+const isLogin = ref(true);
+const localError = ref('');
+const showPassword = ref(false);
+const rememberMe = ref(false);
 
 const form = reactive({
+  name: '',
   email: '',
   password: '',
 });
 
-const handleLogin = async () => {
-  if (!form.email || !form.password) {
-    errorMessage.value = 'Please enter both email and password.';
+const handleSubmit = async () => {
+  localError.value = '';
+  
+  if (!form.email || !form.password || (!isLogin.value && !form.name)) {
+    localError.value = 'Please fill in all required fields.';
     return;
   }
 
-  errorMessage.value = '';
-  await router.push('/app');
+  let success = false;
+  if (isLogin.value) {
+    success = await authStore.login({ email: form.email, password: form.password });
+  } else {
+    success = await authStore.register({ name: form.name, email: form.email, password: form.password });
+  }
+
+  if (success) {
+    router.push('/app');
+  }
 };
 </script>

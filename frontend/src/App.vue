@@ -7,10 +7,11 @@
       </div>
 
       <nav class="sidebar-nav">
-        <RouterLink to="/app">Overview</RouterLink>
+        <RouterLink to="/app" exact-active-class="router-link-exact-active">Overview</RouterLink>
         <RouterLink to="/app/transactions">Transactions</RouterLink>
-        <a href="#" class="disabled-link" @click.prevent>Budgets</a>
-        <a href="#" class="disabled-link" @click.prevent>AI Assistant</a>
+        <RouterLink to="/app/budgets">Budgets</RouterLink>
+        <RouterLink to="/app/ai-assistant">AI Assistant</RouterLink>
+        <RouterLink to="/app/settings">Settings</RouterLink>
       </nav>
 
       <div class="premium-card">
@@ -18,6 +19,18 @@
         <p>Unlock advanced reports and real-time cash flow forecasting.</p>
         <button type="button">Upgrade now</button>
       </div>
+
+      <div class="user-profile" v-if="authStore.user">
+        <div class="user-avatar">{{ authStore.user.name ? authStore.user.name.charAt(0).toUpperCase() : 'U' }}</div>
+        <div class="user-info">
+          <p class="user-name">{{ authStore.user.name }}</p>
+          <p class="user-email">{{ authStore.user.email }}</p>
+        </div>
+      </div>
+
+      <button type="button" class="ghost-btn signout-btn" @click="handleSignOut">
+        Sign Out
+      </button>
     </aside>
 
     <div class="workspace">
@@ -98,9 +111,12 @@
 
 <script setup>
 import { computed, ref } from 'vue';
-import { RouterLink, RouterView, useRoute } from 'vue-router';
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router';
+import { useAuthStore } from './stores/authStore';
 
 const route = useRoute();
+const router = useRouter();
+const authStore = useAuthStore();
 const searchText = ref('');
 const footerYear = new Date().getFullYear();
 
@@ -117,4 +133,9 @@ const todayText = computed(() =>
     year: 'numeric',
   }).format(new Date())
 );
+
+const handleSignOut = () => {
+  authStore.logout();
+  router.push('/login');
+};
 </script>

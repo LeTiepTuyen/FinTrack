@@ -4,7 +4,9 @@ A full-stack finance management project built with Vue 3 + Vite (frontend) and L
 
 ![Vue](https://img.shields.io/badge/vue-3.5.20-42b883.svg)
 ![Vite](https://img.shields.io/badge/vite-5.4.x-646cff.svg)
-![Laravel](https://img.shields.io/badge/laravel-schema%20scaffold-red.svg)
+![Node.js](https://img.shields.io/badge/node.js-backend-green.svg)
+![Express](https://img.shields.io/badge/express-api-lightgrey.svg)
+![MongoDB](https://img.shields.io/badge/mongodb-database-green.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 ## Overview
@@ -13,7 +15,7 @@ FinTrack helps users track income and expenses, monitor balances, plan budgets, 
 
 Current repository status:
 - Frontend is runnable and includes marketing pages, login, dashboard, and transaction ledger.
-- Backend currently contains API/domain scaffold (models, routes, migrations) and database schema design.
+- Backend is built with Node.js, Express, and MongoDB to serve API endpoints.
 
 ## Team Members
 
@@ -41,31 +43,23 @@ Current repository status:
 ## Technology Stack
 
 - Frontend: Vue 3, Vue Router, Pinia, Axios, Vite
-- Backend architecture: Laravel-style folders, Eloquent models, migrations, API route scaffold
-- Database target: MySQL-compatible relational schema
+- Backend: Node.js, Express.js, Mongoose
+- Database: MongoDB Atlas
 
 ## Project Structure
 
 ```
 HCI-FinTrack/
 |-- backend/
-|   |-- app/
-|   |   |-- Http/Controllers/Api/TransactionController.php
-|   |   `-- Models/
-|   |       |-- User.php
-|   |       |-- Wallet.php
-|   |       |-- Category.php
-|   |       |-- Transaction.php
-|   |       |-- Budget.php
-|   |       |-- SavingGoal.php
-|   |       |-- GoalContribution.php
-|   |       `-- RecurringTransaction.php
-|   |-- database/
-|   |   |-- migrations/
-|   |   `-- SCHEMA.md
-|   |-- routes/api.php
-|   |-- composer.json
-|   `-- .env.example
+|   |-- controllers/
+|   |   `-- transactionController.js
+|   |-- models/
+|   |   `-- Transaction.js
+|   |-- routes/
+|   |   `-- transactionRoutes.js
+|   |-- .env
+|   |-- package.json
+|   `-- server.js
 |-- frontend/
 |   |-- public/references/
 |   |-- src/
@@ -114,21 +108,23 @@ npm run build
 
 ## Backend Status and Notes
 
-The backend directory is currently a schema/API scaffold, not a full Laravel runtime bootstrap.
+The backend directory has been completely migrated to Node.js (Express) with MongoDB connection.
 
-What is included:
-- Eloquent-style models for core finance modules
-- Migration files for full finance schema
-- Transaction API controller scaffold
+### Run Backend
 
-Next step to run backend in production mode:
-- Integrate this scaffold into a full Laravel application bootstrap and run migrations.
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+The API will start running at `http://localhost:8000/api`.
 
 ## Database Schema Modules
 
 ![FinTrack Database Schema](Fintrack-database-schema-design.png)
 
-Defined in `backend/database/SCHEMA.md` and migration files:
+Defined in [DATABASE.md](DATABASE.md) and model files:
 
 - users
 - wallets
@@ -155,12 +151,11 @@ Currently defined endpoint group:
 
 ## Roadmap
 
-1. Convert backend scaffold into full Laravel runtime project
-2. Add authentication (Sanctum/JWT)
-3. Add controllers/resources for wallets, categories, budgets, saving goals
-4. Add recurring transaction scheduler
-5. Add reporting APIs and chart endpoints
-6. Add test suites for frontend and backend
+1. Add controllers/resources for wallets, categories, budgets, saving goals
+2. Add authentication (JWT)
+3. Add recurring transaction scheduler
+4. Add reporting APIs and chart endpoints
+5. Add test suites for frontend and backend
 
 ## License
 
