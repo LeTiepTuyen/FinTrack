@@ -96,6 +96,11 @@ npm run dev
 For a detailed look at the collection structures and entity relationships, please refer to:
 👉 **[DATABASE.md](DATABASE.md)**
 
+## Testing Strategy
+
+The project testing approach and coverage baseline are documented here:
+👉 **[docs/qa/testing-strategy.fintrack.md](docs/qa/testing-strategy.fintrack.md)**
+
 ---
 
 ## License
