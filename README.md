@@ -1,6 +1,6 @@
 # FinTrack - Personal Finance Management Platform
 
-A full-stack finance management project built with Vue 3 + Vite (frontend) and Laravel-style backend architecture.
+A full-stack finance management project built with **Vue 3 + Vite** (frontend) and **Node.js + Express + MongoDB** (backend).
 
 ![Vue](https://img.shields.io/badge/vue-3.5.20-42b883.svg)
 ![Vite](https://img.shields.io/badge/vite-5.4.x-646cff.svg)
@@ -11,11 +11,11 @@ A full-stack finance management project built with Vue 3 + Vite (frontend) and L
 
 ## Overview
 
-FinTrack helps users track income and expenses, monitor balances, plan budgets, and manage saving goals.
+FinTrack helps users track income and expenses, monitor balances, plan monthly budgets, and get financial insights through an AI-powered assistant simulation.
 
-Current repository status:
-- Frontend is runnable and includes marketing pages, login, dashboard, and transaction ledger.
-- Backend is built with Node.js, Express, and MongoDB to serve API endpoints.
+### Current Status
+- **Backend**: Fully migrated from Laravel to Node.js/MongoDB. Implements JWT authentication and robust data isolation.
+- **Frontend**: Single Page Application (SPA) with multiple dashboards, transaction management, and real-time visualization.
 
 ## Team Members
 
@@ -27,136 +27,76 @@ Current repository status:
 
 ## Core Features
 
-### Implemented in frontend
-- Multi-layout website (marketing, auth, app workspace)
-- Login screen with simple local validation flow
-- Dashboard with balance/income/expense cards
-- Weekly cash-flow visualization
-- Transaction ledger with filters and quick add form
-- Blog and feature pages for product presentation
+### 💰 Financial Management
+- **Transaction Ledger**: Track income and expenses with detailed notes, categories, and dates. Includes server-side pagination and advanced filtering.
+- **Monthly Budgets**: Set spending limits per category and monitor progress with visual indicators.
+- **Real-time Analytics**: Dashboard with balance summaries, weekly cash flow charts, and category-based spending breakdown (Donut Chart).
+- **Data Export**: Export your transaction history to CSV for external analysis.
 
-### Implemented in backend scaffold
-- Transaction CRUD controller scaffold
-- Domain models for core finance modules
-- Extended schema for users, wallets, categories, budgets, saving goals, and recurring transactions
+### 🤖 Smart Features
+- **AI Assistant (Simulation)**: A virtual consultant to help analyze your spending habits and provide financial tips.
+- **Profile & Security**: Manage your personal information and update your password securely.
+
+### 🔐 Authentication & Security
+- **Secure Login**: JWT-based authentication system.
+- **Data Isolation**: Users can only access and manage their own financial data.
 
 ## Technology Stack
 
-- Frontend: Vue 3, Vue Router, Pinia, Axios, Vite
-- Backend: Node.js, Express.js, Mongoose
-- Database: MongoDB Atlas
+- **Frontend**: Vue 3 (Composition API), Vue Router, Pinia, Axios, Vite.
+- **Backend**: Node.js, Express.js, Mongoose.
+- **Database**: MongoDB (Local or Atlas).
 
 ## Project Structure
 
 ```
 HCI-FinTrack/
 |-- backend/
-|   |-- controllers/
-|   |   `-- transactionController.js
-|   |-- models/
-|   |   `-- Transaction.js
-|   |-- routes/
-|   |   `-- transactionRoutes.js
-|   |-- .env
-|   |-- package.json
-|   `-- server.js
+|   |-- controllers/       # Auth, Transaction, Budget logic
+|   |-- middleware/        # JWT Protection
+|   |-- models/            # Mongoose Schemas (User, Transaction, Budget)
+|   |-- routes/            # API Route definitions
+|   |-- server.js          # Entry point
+|   `-- .env               # Environment variables
 |-- frontend/
-|   |-- public/references/
 |   |-- src/
-|   |   |-- assets/base.css
-|   |   |-- router/index.js
-|   |   |-- services/api.js
-|   |   |-- stores/financeStore.js
-|   |   `-- views/
-|   |       |-- HomeView.vue
-|   |       |-- FeaturesView.vue
-|   |       |-- BlogView.vue
-|   |       |-- LoginView.vue
-|   |       |-- DashboardView.vue
-|   |       `-- TransactionsView.vue
-|   |-- package.json
-|   `-- vite.config.js
-|-- .gitignore
+|   |   |-- services/api.js      # Axios configuration
+|   |   |-- stores/              # Pinia (auth, finance)
+|   |   |-- views/               # Pages (Dashboard, Transactions, Budgets, AI, etc.)
+|   |   `-- assets/base.css      # Core Design System
+|-- DATABASE.md            # Detailed DB Documentation & ER Diagram
 `-- README.md
 ```
 
-## Frontend Quick Start
+## Quick Start
 
-### Prerequisites
+### 1. Prerequisites
 - Node.js 20+
+- MongoDB installed and running locally
 
-### Install and run
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-App URLs:
-- Marketing pages: `http://localhost:5173/`
-- Login: `http://localhost:5173/login`
-- Dashboard: `http://localhost:5173/app`
-- Transactions: `http://localhost:5173/app/transactions`
-
-### Build
-
-```bash
-cd frontend
-npm run build
-```
-
-## Backend Status and Notes
-
-The backend directory has been completely migrated to Node.js (Express) with MongoDB connection.
-
-### Run Backend
-
+### 2. Backend Setup
 ```bash
 cd backend
 npm install
+# Create a .env file with MONGODB_URI and JWT_SECRET
 npm run dev
 ```
+*API will run at `http://localhost:8000/api`*
 
-The API will start running at `http://localhost:8000/api`.
+### 3. Frontend Setup
+```bash
+cd frontend
+npm install
+npm run dev
+```
+*App will run at `http://localhost:5173`*
 
-## Database Schema Modules
+## Database Documentation
 
-![FinTrack Database Schema](Fintrack-database-schema-design.png)
+For a detailed look at the collection structures and entity relationships, please refer to:
+👉 **[DATABASE.md](DATABASE.md)**
 
-Defined in [DATABASE.md](DATABASE.md) and model files:
-
-- users
-- wallets
-- categories
-- transactions
-- budgets
-- saving_goals
-- goal_contributions
-- recurring_transactions
-
-Schema highlights:
-- Transaction table supports legacy `category` text plus normalized `category_id`
-- Support for manual/import/recurring transaction sources
-- Budget and savings goal planning is modeled for monthly and long-term tracking
-
-## API Scaffold (Current)
-
-Currently defined endpoint group:
-- `GET /api/transactions`
-- `POST /api/transactions`
-- `GET /api/transactions/{id}`
-- `PUT /api/transactions/{id}`
-- `DELETE /api/transactions/{id}`
-
-## Roadmap
-
-1. Add controllers/resources for wallets, categories, budgets, saving goals
-2. Add authentication (JWT)
-3. Add recurring transaction scheduler
-4. Add reporting APIs and chart endpoints
-5. Add test suites for frontend and backend
+---
 
 ## License
-
 MIT License
